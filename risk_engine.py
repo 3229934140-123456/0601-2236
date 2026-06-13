@@ -227,19 +227,29 @@ class RiskEngine:
 
     def compare_routes(self, route_a: Route, route_b: Route,
                        ship: ShipProfile,
-                       weather: Optional[WeatherCondition] = None) -> dict:
-        result_a = self.check_route(route_a, ship, weather)
-        result_b = self.check_route(route_b, ship, weather)
+                       weather: Optional[WeatherCondition] = None,
+                       weather_a: Optional[WeatherCondition] = None,
+                       weather_b: Optional[WeatherCondition] = None) -> dict:
+        wa = weather_a if weather_a is not None else weather
+        wb = weather_b if weather_b is not None else weather
+        result_a = self.check_route(route_a, ship, wa)
+        result_b = self.check_route(route_b, ship, wb)
         return {
             "route_a": {"name": route_a.name, "result": result_a},
             "route_b": {"name": route_b.name, "result": result_b},
-            "recommendation": self._recommend(result_a, result_b, route_a, route_b),
+            "recommendation": self._recommend(
+                result_a, result_b, route_a, route_b, wa, wb),
         }
 
     def _recommend(self, res_a: CheckResult, res_b: CheckResult,
-                   route_a: Route, route_b: Route) -> str:
+                   route_a: Route, route_b: Route,
+                   weather_a: Optional[WeatherCondition] = None,
+                   weather_b: Optional[WeatherCondition] = None) -> str:
         score_a = self._score(res_a)
         score_b = self._score(res_b)
+        score_a_no_weather = self._score_no_weather(res_a)
+        score_b_no_weather = self._score_no_weather(res_b)
+
         lines = []
         if score_a < score_b:
             lines.append(f"推荐航线: {route_a.name}（综合风险评分更低）")
@@ -247,6 +257,7 @@ class RiskEngine:
             lines.append(f"推荐航线: {route_b.name}（综合风险评分更低）")
         else:
             lines.append("两条航线综合风险评分相近")
+
         lines.append(f"  {route_a.name}: 评分 {score_a}, "
                       f"风险项 {len(res_a.risks)}, "
                       f"航程 {res_a.total_distance_nm:.1f}nm, "
@@ -255,8 +266,46 @@ class RiskEngine:
                       f"风险项 {len(res_b.risks)}, "
                       f"航程 {res_b.total_distance_nm:.1f}nm, "
                       f"用时 {res_b.estimated_time_hours:.1f}h")
+
+        if weather_a and weather_b:
+            weather_risk_a = score_a - score_a_no_weather
+            weather_risk_b = score_b - score_b_no_weather
+            if weather_risk_a != weather_risk_b:
+                worse = route_a.name if weather_risk_a > weather_risk_b else route_b.name
+                better = route_b.name if weather_risk_a > weather_risk_b else route_a.name
+                if weather_risk_a > weather_risk_b:
+                    worse_w = weather_a
+                else:
+                    worse_w = weather_b
+
+                reason_parts = []
+                if worse_w.wave_height_m > 2.0:
+                    reason_parts.append(f"浪高 {worse_w.wave_height_m}m")
+                if worse_w.wind_speed_ms > 10.7:
+                    reason_parts.append(f"风速 {worse_w.wind_speed_ms}m/s")
+                elif worse_w.wind_speed_ms > 5.5:
+                    reason_parts.append(f"风速 {worse_w.wind_speed_ms}m/s")
+                if worse_w.visibility_km < 3.0:
+                    reason_parts.append(f"能见度 {worse_w.visibility_km}km")
+
+                reason_str = "、".join(reason_parts) if reason_parts else "气象条件更差"
+                lines.append(f"  天气影响: {worse} 受天气影响更大（{reason_str}），"
+                              f"天气风险加分 {max(weather_risk_a, weather_risk_b)} "
+                              f"vs {min(weather_risk_a, weather_risk_b)}")
+
+                no_weather_winner = route_a.name if score_a_no_weather < score_b_no_weather else route_b.name
+                weather_winner = route_a.name if score_a < score_b else route_b.name
+                if no_weather_winner != weather_winner:
+                    lines.append(f"  ⚠️  不考虑天气时推荐 {no_weather_winner}，"
+                                  f"加入天气后推荐变为 {weather_winner}")
+
         return "\n".join(lines)
 
     def _score(self, result: CheckResult) -> int:
         weights = {RiskLevel.LOW: 1, RiskLevel.MEDIUM: 3, RiskLevel.HIGH: 8, RiskLevel.CRITICAL: 20}
         return sum(weights.get(r.level, 0) for r in result.risks)
+
+    def _score_no_weather(self, result: CheckResult) -> int:
+        weights = {RiskLevel.LOW: 1, RiskLevel.MEDIUM: 3, RiskLevel.HIGH: 8, RiskLevel.CRITICAL: 20}
+        return sum(weights.get(r.level, 0) for r in result.risks
+                   if r.category != RiskCategory.WEATHER)

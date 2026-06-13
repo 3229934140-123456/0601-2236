@@ -72,6 +72,55 @@ class WeatherService:
             description=description,
         )
 
+    def get_route_aggregate_weather(self, date_str: str,
+                                    waypoints: list, port: str = "") -> WeatherCondition:
+        all_wind = []
+        all_wave = []
+        all_vis = []
+        worst_precip = "无"
+        precip_severity = {"无": 0, "小雨": 1, "小雪": 1, "雾": 2, "大风": 2,
+                           "雷阵雨": 3, "大雨": 3, "暴雨": 4}
+        for wp in waypoints:
+            w = self.get_weather(date_str, wp.lat, wp.lon, port)
+            all_wind.append(w.wind_speed_ms)
+            all_wave.append(w.wave_height_m)
+            all_vis.append(w.visibility_km)
+            if precip_severity.get(w.precipitation, 0) > precip_severity.get(worst_precip, 0):
+                worst_precip = w.precipitation
+
+        avg_wind = round(sum(all_wind) / len(all_wind), 1)
+        max_wind = max(all_wind)
+        avg_wave = round(sum(all_wave) / len(all_wave), 1)
+        max_wave = max(all_wave)
+        min_vis = min(all_vis)
+        avg_vis = round(sum(all_vis) / len(all_vis), 1)
+
+        desc_parts = []
+        if max_wind > 10.7:
+            desc_parts.append("局部大风")
+        elif max_wind > 5.5:
+            desc_parts.append("沿线有风")
+        if max_wave > 2.0:
+            desc_parts.append("局部大浪")
+        if min_vis < 1.0:
+            desc_parts.append("局部浓雾")
+        elif min_vis < 3.0:
+            desc_parts.append("局部轻雾")
+        if worst_precip != "无":
+            desc_parts.append(worst_precip)
+        if not desc_parts:
+            desc_parts.append("天气良好")
+        description = "，".join(desc_parts) + f"（{len(waypoints)}个航点聚合）"
+
+        return WeatherCondition(
+            wind_speed_ms=avg_wind,
+            wind_direction=0,
+            wave_height_m=avg_wave,
+            visibility_km=avg_vis,
+            precipitation=worst_precip,
+            description=description,
+        )
+
     def get_route_weather(self, date_str: str,
                           waypoints: list, port: str = "") -> list:
         results = []
