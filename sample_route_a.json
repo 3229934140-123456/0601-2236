@@ -1,0 +1,19 @@
+{
+  "name": "上海-武汉航线（南线）",
+  "departure_port": "上海",
+  "arrival_port": "武汉",
+  "date": "2026-06-15",
+  "waypoints": [
+    {"name": "上海吴淞口", "lat": 31.38, "lon": 121.50, "arrival_time": "06:00", "speed_knots": 10},
+    {"name": "白茆沙水道", "lat": 31.65, "lon": 121.85, "arrival_time": "07:30", "speed_knots": 8},
+    {"name": "苏通大桥", "lat": 31.80, "lon": 121.00, "arrival_time": "09:00", "speed_knots": 8},
+    {"name": "江阴", "lat": 31.90, "lon": 120.25, "arrival_time": "11:00", "speed_knots": 10},
+    {"name": "南京大桥", "lat": 32.10, "lon": 118.78, "arrival_time": "15:00", "speed_knots": 8},
+    {"name": "芜湖", "lat": 31.35, "lon": 118.40, "arrival_time": "18:00", "speed_knots": 10},
+    {"name": "铜陵", "lat": 30.85, "lon": 117.65, "arrival_time": "20:00", "speed_knots": 10},
+    {"name": "安庆", "lat": 30.50, "lon": 117.05, "arrival_time": "22:00", "speed_knots": 10},
+    {"name": "九江", "lat": 29.75, "lon": 116.00, "arrival_time": "02:00", "speed_knots": 10},
+    {"name": "黄石", "lat": 30.25, "lon": 115.05, "arrival_time": "05:00", "speed_knots": 10},
+    {"name": "武汉港", "lat": 30.55, "lon": 114.28, "arrival_time": "08:00", "speed_knots": 8}
+  ]
+}

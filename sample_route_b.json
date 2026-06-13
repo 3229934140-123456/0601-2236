@@ -1,0 +1,21 @@
+{
+  "name": "上海-武汉航线（北线绕行）",
+  "departure_port": "上海",
+  "arrival_port": "武汉",
+  "date": "2026-06-15",
+  "waypoints": [
+    {"name": "上海吴淞口", "lat": 31.38, "lon": 121.50, "arrival_time": "06:00", "speed_knots": 10},
+    {"name": "南通水道", "lat": 32.05, "lon": 120.85, "arrival_time": "08:00", "speed_knots": 10},
+    {"name": "泰州大桥", "lat": 32.20, "lon": 119.95, "arrival_time": "10:30", "speed_knots": 10},
+    {"name": "镇江", "lat": 32.20, "lon": 119.40, "arrival_time": "12:00", "speed_knots": 10},
+    {"name": "南京二桥", "lat": 32.12, "lon": 118.82, "arrival_time": "14:30", "speed_knots": 8},
+    {"name": "马鞍山", "lat": 31.70, "lon": 118.50, "arrival_time": "16:30", "speed_knots": 10},
+    {"name": "芜湖上游", "lat": 31.40, "lon": 118.35, "arrival_time": "18:30", "speed_knots": 10},
+    {"name": "铜陵", "lat": 30.85, "lon": 117.65, "arrival_time": "20:30", "speed_knots": 10},
+    {"name": "池州", "lat": 30.65, "lon": 117.50, "arrival_time": "22:00", "speed_knots": 10},
+    {"name": "安庆", "lat": 30.50, "lon": 117.05, "arrival_time": "23:30", "speed_knots": 10},
+    {"name": "湖口", "lat": 29.75, "lon": 116.20, "arrival_time": "03:00", "speed_knots": 10},
+    {"name": "鄂州", "lat": 30.40, "lon": 114.90, "arrival_time": "05:30", "speed_knots": 10},
+    {"name": "武汉阳逻", "lat": 30.60, "lon": 114.50, "arrival_time": "07:30", "speed_knots": 8}
+  ]
+}
